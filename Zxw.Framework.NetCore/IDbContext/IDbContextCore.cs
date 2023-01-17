@@ -20,6 +20,7 @@ namespace Zxw.Framework.NetCore.IDbContext
     {
         DbContextOption Option { get; }
         DatabaseFacade GetDatabase();
+        T GetService<T>() where T : class, new();
         int Add<T>(T entity) where T : class;
         Task<int> AddAsync<T>(T entity) where T : class;
         int AddRange<T>(ICollection<T> entities) where T : class;
@@ -53,21 +54,17 @@ namespace Zxw.Framework.NetCore.IDbContext
         Task<int> DeleteAsync<T>(Expression<Func<T, bool>> @where) where T : class;
         void BulkInsert<T>(IList<T> entities, string destinationTableName = null)
             where T : class ;
-        List<TView> SqlQuery<T, TView>(string sql, params object[] parameters) 
+        List<TView> SqlQuery<T, TView>(string sql, params object[] parameters)
             where T : class;
+        List<TView> SqlQuery<TView>(string sql, int cmdTimeout = 30, params object[] parameters);
         PaginationResult SqlQueryByPagination<T, TView>(string sql, string[] orderBys, int pageIndex, int pageSize, Action<TView> eachAction = null)
-            where T : class
-            where TView : class;
-        Task<List<TView>> SqlQueryAsync<T, TView>(string sql, params object[] parameters)
             where T : class
             where TView : class;
         int SaveChanges();
         int SaveChanges(bool acceptAllChangesOnSuccess);
         Task<int> SaveChangesAsync(CancellationToken cancellationToken = default(CancellationToken));
         Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess,CancellationToken cancellationToken = default(CancellationToken));
-
         DataTable GetDataTable(string sql, int cmdTimeout = 30, params DbParameter[] parameters);
-
         PaginationResult SqlQueryByPagination<T>(string sql, string[] orderBys, int pageIndex, int pageSize,
             params DbParameter[] parameters) where T : class, new();
         List<DataTable> GetDataTables(string sql, int cmdTimeout=30, params DbParameter[] parameters);
