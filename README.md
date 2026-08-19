@@ -85,7 +85,7 @@
 * 18. 补充 `SqlIdentifier`、`IUnitOfWork` / `AutoSaveChanges`、分页 ThenBy、`WebContext` 作用域等单元测试（net8/9/10）
 
 *可选 AI*
-* 19. 新增独立包 **`Zxw.Framework.AI`**：内置 [OrcaRouter](https://www.orcarouter.ai/) 作为一等 LLM Provider（`AddOrcaRouter` / `IChatClient`，含非流式与 SSE）；主包不引用，按需安装
+* 19. 新增独立包 **`Zxw.Framework.AI`**：内置 [OrcaRouter](https://www.orcarouter.ai/ref/ref_4efd338f7db91cf2aa1d) 作为一等 LLM Provider（`AddOrcaRouter` / `IChatClient`，含非流式与 SSE）；主包不引用，按需安装
 
 *迁移提示*
 ```csharp
@@ -132,8 +132,6 @@ public class MyService(IChatClient chat)
     }
 }
 ```
-
-* 推广链接：`https://www.orcarouter.ai/ref/ref_4efd338f7db91cf2aa1d`
 * Base URL 默认：`https://api.orcarouter.ai/v1`
 * 协议：OpenAI 兼容 `/chat/completions`（含 SSE 流式）
 * 文档：[docs.orcarouter.ai](https://docs.orcarouter.ai/introduction)
