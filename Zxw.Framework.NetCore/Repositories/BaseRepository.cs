@@ -6,6 +6,7 @@ using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Zxw.Framework.NetCore.Extensions;
+using Zxw.Framework.NetCore.Helpers;
 using Zxw.Framework.NetCore.IDbContext;
 using Zxw.Framework.NetCore.Models;
 
@@ -21,8 +22,6 @@ namespace Zxw.Framework.NetCore.Repositories
         protected BaseRepository(IDbContextCore dbContext, ISqlOperatorUtility sqlOperator)
         {
             DbContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
-            DbContext.EnsureCreated();
-
             SqlOperatorUtility = sqlOperator;
         }
 
@@ -94,8 +93,7 @@ namespace Zxw.Framework.NetCore.Repositories
         }
         public virtual int Update(T model, params string[] updateColumns)
         {
-            DbContext.Update(model, updateColumns);
-            return DbContext.SaveChanges();
+            return DbContext.Update(model, updateColumns);
         }
 
         public virtual int Update(Expression<Func<T, bool>> @where, Expression<Func<T, T>> updateFactory)
@@ -221,13 +219,20 @@ namespace Zxw.Framework.NetCore.Repositories
         /// </summary>
         public virtual IEnumerable<T> GetByPagination(Expression<Func<T, bool>> @where, int pageSize, int pageIndex, bool asc = true, params Expression<Func<T, object>>[] @orderby)
         {
+            SqlIdentifier.EnsurePaging(pageIndex, pageSize);
             var filter = DbContext.Get(where);
-            if (orderby != null)
+            if (orderby != null && orderby.Length > 0)
             {
-                foreach (var func in orderby)
+                IOrderedQueryable<T> ordered = asc
+                    ? filter.OrderBy(orderby[0])
+                    : filter.OrderByDescending(orderby[0]);
+                for (var i = 1; i < orderby.Length; i++)
                 {
-                    filter = asc ? filter.OrderBy(func).AsQueryable() : filter.OrderByDescending(func).AsQueryable();
+                    ordered = asc
+                        ? ordered.ThenBy(orderby[i])
+                        : ordered.ThenByDescending(orderby[i]);
                 }
+                filter = ordered;
             }
             return filter.Skip(pageSize * (pageIndex - 1)).Take(pageSize);
         }
@@ -245,6 +250,7 @@ namespace Zxw.Framework.NetCore.Repositories
 
         public List<TView> GetViews<TView>(string viewName, Func<TView, bool> @where)
         {
+            SqlIdentifier.EnsureSafe(viewName, nameof(viewName));
             var list = SqlOperatorUtility.SqlQuery<TView>($"select * from {viewName}").ToList();
             if (where != null)
             {
@@ -269,7 +275,8 @@ namespace Zxw.Framework.NetCore.Repositories
 
         public void Dispose()
         {
-            DbContext?.Dispose();
+            // DbContext is scoped and owned by DI. Disposing it here would break
+            // other repositories that share the same context in this request.
         }
     }
 }

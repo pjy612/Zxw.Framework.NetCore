@@ -1,37 +1,46 @@
 # Zxw.Framework.NetCore
 [![Build Status](https://dev.azure.com/v-xiaze0473/v-xiaze/_apis/build/status/VictorTzeng.Zxw.Framework.NetCore?branchName=master)](https://dev.azure.com/v-xiaze0473/v-xiaze/_build/latest?definitionId=1&branchName=master)
 
-基于EF Core的Code First模式的DotNetCore快速开发框架
+基于 EF Core 的 Code First 模式 .NET 快速开发框架
 
-**Nuget [最新版本：6.1.0]**
+**NuGet [最新版本：7.0.0]**
 
-[Zxw.Framework.NetCore](https://www.nuget.org/packages/Zxw.Framework.NetCore/6.1.0) 
-* Install-Package Zxw.Framework.NetCore -Version 6.1.0
-* dotnet add package Zxw.Framework.NetCore --version 6.1.0
+[Zxw.Framework.NetCore](https://www.nuget.org/packages/Zxw.Framework.NetCore)
+* `Install-Package Zxw.Framework.NetCore -Version 7.0.0`
+* `dotnet add package Zxw.Framework.NetCore --version 7.0.0`
+
+[Zxw.Framework.AI](https://www.nuget.org/packages/Zxw.Framework.AI)（可选）
+* `Install-Package Zxw.Framework.AI -Version 7.0.0`
+* `dotnet add package Zxw.Framework.AI --version 7.0.0`
+* 内置 LLM 网关选项：[OrcaRouter](https://www.orcarouter.ai/)（OpenAI 兼容，默认 `orcarouter/auto`）
 
 **开发环境**
-* VS2019 / VS Code
-* .net core 3.1.100
+* Visual Studio 2022 / VS Code / Cursor
+* .NET SDK 8 / 9 / 10
+
+**目标框架**
+* `net8.0` / `net9.0` / `net10.0`（已移除 net6 / net7）
 
 **支持的数据库**
 * SQL Server
-* MySQL
+* MySQL（net8/net9：Pomelo；net10：MySql.EntityFrameworkCore，待 Pomelo 正式支持 EF10 后切回）
 * Sqlite
 * InMemory
 * PostgreSQL
 * Oracle
-* MongoDB (已移除)
+* MongoDB（已移除）
 
 **日志组件**
-* log4net
+* log4net（建议业务侧优先使用 `ILogger<T>`）
 
-**DI组件**
-* Autofac
-* [Aspectcore.Injector](https://github.com/dotnetcore/AspectCore-Framework/blob/master/docs/injector.md)
+**DI 组件**
+* Microsoft.Extensions.DependencyInjection（默认）
+* Autofac（可选）
+* [AspectCore](https://github.com/dotnetcore/AspectCore-Framework)（可选 AOP）
 
-**AOP缓存组件使用**
+**AOP 缓存组件使用**
 
-本项目采用的AOP中间件 ：[AspectCore.Extensions.Cache](https://github.com/VictorTzeng/AspectCore.Extensions.Cache)
+本项目可采用 AOP 中间件：[AspectCore.Extensions.Cache](https://github.com/VictorTzeng/AspectCore.Extensions.Cache)
 
 # 示例
 * [Zxw.Framework.NetCore.Demo](https://github.com/VictorTzeng/Zxw.Framework.NetCore.Demo)
@@ -44,6 +53,93 @@
 * 请参考我的博客：[http://www.cnblogs.com/zengxw/p/7673952.html](http://www.cnblogs.com/zengxw/p/7673952.html)
 
 # 更新日志
+
+**2026/08/19 — 7.0.0（破坏性升级）**
+
+*Breaking*
+* 1. 目标框架改为 `net8.0` / `net9.0` / `net10.0`，移除对 `net6.0` / `net7.0` 的支持
+* 2. `IRepository` / `IService` / `IWebContext` 生命周期改为 **Scoped**（不再使用 Transient / Singleton 承载请求态依赖）
+* 3. ASP.NET Core 改为 `FrameworkReference`，移除 `Microsoft.AspNetCore.* 2.2` 兼容包
+* 4. 淘汰 **Jil**，`JsonConvertor` 统一为 `System.Text.Json`（原 `Jil.Options` 参数改为 `JsonSerializerOptions`；已移除 `DeserializeDynamic`）
+
+*数据访问 / 工作单元*
+* 5. 新增 `IUnitOfWork` / `EfUnitOfWork`；`DbContextOption.AutoSaveChanges`（默认 `true` 兼容旧行为，设为 `false` 后需显式提交以支持跨仓储事务）
+* 6. 仓储构造函数不再调用 `EnsureCreated()`；生产环境请使用迁移
+* 7. 仓储 `Dispose` 不再释放共享 `DbContext`（由 DI 作用域管理）
+* 8. 修复 `EditRange` 未标记 `Modified`；分页 `GetByPagination` 多字段排序改为 `OrderBy` + `ThenBy`
+* 9. 修复假异步（如 `ExistAsync`）；异步 API 补充 `CancellationToken`
+* 10. SQL Server / MySQL `BulkInsert` 改为同步等待完成，避免未 await 导致数据不确定
+
+*安全 / Web*
+* 11. 新增 `SqlIdentifier`，校验分页 `ORDER BY`、视图名、表名等动态 SQL 标识符
+* 12. `WebContext` 改为 Scoped，每次从 `IHttpContextAccessor` 读取当前 `HttpContext`
+* 13. `GlobalExceptionFilter` 返回 `ProblemDetails`（500），不再静默吞掉异常
+* 14. 修正 `RegisterControllers` 中 `IsAssignableFrom` 判断写反的问题
+
+*依赖*
+* 15. 按 TFM 对齐 EF Core / Npgsql / Oracle / Z.EntityFramework.Plus 主版本
+* 16. net10 MySQL 暂用 `MySql.EntityFrameworkCore`（Pomelo 10 未发布）；`BulkInsert` 在 net10 退化为 `AddRange`
+* 17. 移除重复的 `DotNetCore.NPOI` 引用与停更的 Jil / StackExchange.Redis.Extensions.JilCore
+
+*测试*
+* 18. 补充 `SqlIdentifier`、`IUnitOfWork` / `AutoSaveChanges`、分页 ThenBy、`WebContext` 作用域等单元测试（net8/9/10）
+
+*可选 AI*
+* 19. 新增独立包 **`Zxw.Framework.AI`**：内置 [OrcaRouter](https://www.orcarouter.ai/) 作为一等 LLM Provider（`AddOrcaRouter` / `IChatClient`，含非流式与 SSE）；主包不引用，按需安装
+
+*迁移提示*
+```csharp
+// 跨仓储事务：关闭自动提交
+var option = new DbContextOption
+{
+    ConnectionString = "...",
+    AutoSaveChanges = false
+};
+// ...
+await repoA.AddAsync(a);
+await repoB.AddAsync(b);
+await uow.SaveChangesAsync(); // IUnitOfWork
+```
+
+*后续规划（包拆分）*
+* 计划拆为可选包：`Abstractions` / `EFCore`（及各数据库 Provider）/ `Caching` / `AspNetCore` / `CodeGenerator`，并保留 `Zxw.Framework.NetCore` 元包兼容旧引用方式
+* 已先行提供可选包 **`Zxw.Framework.AI`**：内置 [OrcaRouter](https://www.orcarouter.ai/) 作为一等 LLM Provider（不进入主包，按需引用）
+
+# LLM 网关（可选）— OrcaRouter
+
+[![Powered by OrcaRouter](https://img.shields.io/badge/Powered_by-OrcaRouter-2563eb)](https://www.orcarouter.ai/ref/ref_4efd338f7db91cf2aa1d)
+
+本框架 EF / DI 主包不绑定大模型。需要 Chat Completions 时，引用 **`Zxw.Framework.AI`**，通过 `AddOrcaRouter()` 注册内置网关选项。
+
+```csharp
+services.AddOrcaRouter(o =>
+{
+    o.ApiKey = Configuration["OrcaRouter:ApiKey"]; // 或环境变量 ORCAROUTER_API_KEY
+    o.DefaultModel = "orcarouter/auto";
+    o.FallbackModels = new[] { "openai/gpt-4o-mini", "deepseek/deepseek-chat" };
+    // OSS 推广码（合作伙伴中心「你的推广码」）；HttpReferer 未设时自动用推广链接归因
+    o.ReferralCode = "ref_4efd338f7db91cf2aa1d";
+    o.AppTitle = "Zxw.Framework.NetCore";
+});
+
+// 注入使用
+public class MyService(IChatClient chat)
+{
+    public async Task<string> AskAsync(string prompt)
+    {
+        var resp = await chat.CompleteAsync(new ChatCompletionRequest
+        {
+            Messages = { ChatMessage.User(prompt) }
+        });
+        return resp.GetContent();
+    }
+}
+```
+
+* 推广链接：`https://www.orcarouter.ai/ref/ref_4efd338f7db91cf2aa1d`
+* Base URL 默认：`https://api.orcarouter.ai/v1`
+* 协议：OpenAI 兼容 `/chat/completions`（含 SSE 流式）
+* 文档：[docs.orcarouter.ai](https://docs.orcarouter.ai/introduction)
 
 **2022/11/20**
 * 1.兼容.net7.0，

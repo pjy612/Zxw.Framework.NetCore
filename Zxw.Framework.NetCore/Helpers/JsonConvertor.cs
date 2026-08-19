@@ -1,35 +1,46 @@
-﻿using Jil;
-using System;
+﻿using System;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Zxw.Framework.NetCore.Helpers
 {
     /// <summary>
-    /// json serialization and deserialization, using Jil.
+    /// JSON serialization helper based on System.Text.Json.
     /// </summary>
-    public class JsonConvertor
+    public static class JsonConvertor
     {
-        public static string Serialize(object source, Jil.Options options = null)
+        private static readonly JsonSerializerOptions DefaultOptions = CreateDefaultOptions();
+
+        private static JsonSerializerOptions CreateDefaultOptions()
         {
-            return JSON.Serialize(source, options);
-        }
-        public static string Serialize<T>(T source, Jil.Options options = null)
-        {
-            return JSON.Serialize(source, options);
+            return new JsonSerializerOptions
+            {
+                PropertyNamingPolicy = null,
+                WriteIndented = false,
+                AllowTrailingCommas = true,
+                DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+                PropertyNameCaseInsensitive = true
+            };
         }
 
-        public static T Deserialize<T>(string source, Jil.Options options = null)
+        public static string Serialize(object source, JsonSerializerOptions options = null)
         {
-            return JSON.Deserialize<T>(source, options);
+            return JsonSerializer.Serialize(source, options ?? DefaultOptions);
         }
 
-        public static object Deserialize(string source, Type destinationType, Jil.Options options = null)
+        public static string Serialize<T>(T source, JsonSerializerOptions options = null)
         {
-            return JSON.Deserialize(source, destinationType, options);                
+            return JsonSerializer.Serialize(source, options ?? DefaultOptions);
         }
 
-        public static dynamic Deserialize(string source, Jil.Options options = null)
+        public static T Deserialize<T>(string source, JsonSerializerOptions options = null)
         {
-            return JSON.DeserializeDynamic(source, options);
+            return JsonSerializer.Deserialize<T>(source, options ?? DefaultOptions);
+        }
+
+        public static object Deserialize(string source, Type destinationType, JsonSerializerOptions options = null)
+        {
+            return JsonSerializer.Deserialize(source, destinationType, options ?? DefaultOptions);
         }
     }
 }

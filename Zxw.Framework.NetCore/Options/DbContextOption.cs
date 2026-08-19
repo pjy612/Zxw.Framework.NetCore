@@ -23,5 +23,11 @@
         /// 是否开启LazyLoadingProxy
         /// </summary>
         public bool EnableLazyLoadingProxy { get; set; } = true;
+
+        /// <summary>
+        /// 为 true（默认）时，仓储/上下文的增删改方法会立即 SaveChanges，兼容旧行为。
+        /// 为 false 时仅跟踪变更，需通过 <c>IUnitOfWork</c> 或显式 SaveChanges 提交，以便跨仓储事务。
+        /// </summary>
+        public bool AutoSaveChanges { get; set; } = true;
     }
 }
