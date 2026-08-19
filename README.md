@@ -12,7 +12,7 @@
 [Zxw.Framework.AI](https://www.nuget.org/packages/Zxw.Framework.AI)（可选）
 * `Install-Package Zxw.Framework.AI -Version 7.0.0`
 * `dotnet add package Zxw.Framework.AI --version 7.0.0`
-* 内置 LLM 网关选项：[OrcaRouter](https://www.orcarouter.ai/)（OpenAI 兼容，默认 `orcarouter/auto`）
+* 内置 LLM 网关选项：[OrcaRouter](https://www.orcarouter.ai/ref/ref_4efd338f7db91cf2aa1d)（OpenAI 兼容，默认 `orcarouter/auto`）
 
 **开发环境**
 * Visual Studio 2022 / VS Code / Cursor
@@ -103,7 +103,7 @@ await uow.SaveChangesAsync(); // IUnitOfWork
 
 *后续规划（包拆分）*
 * 计划拆为可选包：`Abstractions` / `EFCore`（及各数据库 Provider）/ `Caching` / `AspNetCore` / `CodeGenerator`，并保留 `Zxw.Framework.NetCore` 元包兼容旧引用方式
-* 已先行提供可选包 **`Zxw.Framework.AI`**：内置 [OrcaRouter](https://www.orcarouter.ai/) 作为一等 LLM Provider（不进入主包，按需引用）
+* 已先行提供可选包 **`Zxw.Framework.AI`**：内置 [OrcaRouter](https://www.orcarouter.ai/ref/ref_4efd338f7db91cf2aa1d) 作为一等 LLM Provider（不进入主包，按需引用）
 
 # LLM 网关（可选）— OrcaRouter
 
@@ -117,9 +117,6 @@ services.AddOrcaRouter(o =>
     o.ApiKey = Configuration["OrcaRouter:ApiKey"]; // 或环境变量 ORCAROUTER_API_KEY
     o.DefaultModel = "orcarouter/auto";
     o.FallbackModels = new[] { "openai/gpt-4o-mini", "deepseek/deepseek-chat" };
-    // OSS 推广码（合作伙伴中心「你的推广码」）；HttpReferer 未设时自动用推广链接归因
-    o.ReferralCode = "ref_4efd338f7db91cf2aa1d";
-    o.AppTitle = "Zxw.Framework.NetCore";
 });
 
 // 注入使用
