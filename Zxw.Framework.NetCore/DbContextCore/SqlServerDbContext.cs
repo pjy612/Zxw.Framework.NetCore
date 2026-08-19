@@ -13,6 +13,7 @@ using Zxw.Framework.NetCore.Extensions;
 using Zxw.Framework.NetCore.IDbContext;
 using Zxw.Framework.NetCore.Models;
 using Zxw.Framework.NetCore.Options;
+using SqlIdentifier = Zxw.Framework.NetCore.Helpers.SqlIdentifier;
 
 namespace Zxw.Framework.NetCore.DbContextCore
 {
@@ -46,6 +47,7 @@ namespace Zxw.Framework.NetCore.DbContextCore
                 var mappingTableName = typeof(T).GetCustomAttribute<TableAttribute>()?.Name;
                 destinationTableName = string.IsNullOrEmpty(mappingTableName) ? typeof(T).Name : mappingTableName;
             }
+            SqlIdentifier.EnsureSafe(destinationTableName, nameof(destinationTableName));
             SqlBulkInsert<T>(entities, destinationTableName);
         }
 
@@ -61,22 +63,23 @@ namespace Zxw.Framework.NetCore.DbContextCore
                 {
                     try
                     {
-                        var bulk = new SqlBulkCopy(conn, SqlBulkCopyOptions.Default, tran)
+                        using (var bulk = new SqlBulkCopy(conn, SqlBulkCopyOptions.Default, tran)
                         {
                             BatchSize = entities.Count,
                             DestinationTableName = dt.TableName,
-                        };
-                        GenerateColumnMappings<T>(bulk.ColumnMappings);
-                        bulk.WriteToServerAsync(dt);
-                        tran.Commit();
+                        })
+                        {
+                            GenerateColumnMappings<T>(bulk.ColumnMappings);
+                            bulk.WriteToServer(dt);
+                            tran.Commit();
+                        }
                     }
-                    catch (Exception)
+                    catch
                     {
                         tran.Rollback();
                         throw;
-                    }                        
+                    }
                 }
-                conn.Close();
             }
         }
 
@@ -100,9 +103,11 @@ namespace Zxw.Framework.NetCore.DbContextCore
         public override PaginationResult SqlQueryByPagination<T, TView>(string sql, string[] orderBys, int pageIndex, int pageSize,
             Action<TView> eachAction = null)
         {
+            SqlIdentifier.EnsurePaging(pageIndex, pageSize);
+            var orderBySql = SqlIdentifier.JoinOrderBy(orderBys);
             var total = SqlQuery<int>($"select count(1) from ({sql}) as s").FirstOrDefault();
             var jsonResults = SqlQuery<TView>(
-                    $"select * from (select *,row_number() over (order by {string.Join(",", orderBys)}) as RowId from ({sql}) as s) as t where RowId between {pageSize * (pageIndex - 1) + 1} and {pageSize * pageIndex} order by {string.Join(",", orderBys)}")
+                    $"select * from (select *,row_number() over (order by {orderBySql}) as RowId from ({sql}) as s) as t where RowId between {pageSize * (pageIndex - 1) + 1} and {pageSize * pageIndex} order by {orderBySql}")
                 .ToList();
             if (eachAction != null)
             {
@@ -125,9 +130,11 @@ namespace Zxw.Framework.NetCore.DbContextCore
         public override PaginationResult SqlQueryByPagination<T>(string sql, string[] orderBys, int pageIndex, int pageSize,
             params DbParameter[] parameters)
         {
+            SqlIdentifier.EnsurePaging(pageIndex, pageSize);
+            var orderBySql = SqlIdentifier.JoinOrderBy(orderBys);
             var total = (int)this.ExecuteScalar($"select count(1) from ({sql}) as s");
             var jsonResults = GetDataTable(
-                    $"select * from (select *,row_number() over (order by {string.Join(",", orderBys)}) as RowId from ({sql}) as s) as t where RowId between {pageSize * (pageIndex - 1) + 1} and {pageSize * pageIndex} order by {string.Join(",", orderBys)}")
+                    $"select * from (select *,row_number() over (order by {orderBySql}) as RowId from ({sql}) as s) as t where RowId between {pageSize * (pageIndex - 1) + 1} and {pageSize * pageIndex} order by {orderBySql}")
                 .ToList<T>();
             return new PaginationResult(true, string.Empty, jsonResults)
             {

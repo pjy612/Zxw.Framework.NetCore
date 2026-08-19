@@ -5,6 +5,8 @@ VisualStudioVersion = 15.0.27004.2002
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Zxw.Framework.NetCore", "Zxw.Framework.NetCore\Zxw.Framework.NetCore.csproj", "{3CA31344-BC8F-47A2-B23F-A6CDB3DEC255}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Zxw.Framework.AI", "Zxw.Framework.AI\Zxw.Framework.AI.csproj", "{A1B2C3D4-E5F6-7890-ABCD-EF1234567890}"
+EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Zxw.Framework.UnitTest", "Zxw.Framework.UnitTest\Zxw.Framework.UnitTest.csproj", "{0E7B2942-A74D-4297-B2A8-7F7C5955C476}"
 EndProject
 Global
@@ -17,6 +19,10 @@ Global
 		{3CA31344-BC8F-47A2-B23F-A6CDB3DEC255}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3CA31344-BC8F-47A2-B23F-A6CDB3DEC255}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3CA31344-BC8F-47A2-B23F-A6CDB3DEC255}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A1B2C3D4-E5F6-7890-ABCD-EF1234567890}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A1B2C3D4-E5F6-7890-ABCD-EF1234567890}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A1B2C3D4-E5F6-7890-ABCD-EF1234567890}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A1B2C3D4-E5F6-7890-ABCD-EF1234567890}.Release|Any CPU.Build.0 = Release|Any CPU
 		{0E7B2942-A74D-4297-B2A8-7F7C5955C476}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{0E7B2942-A74D-4297-B2A8-7F7C5955C476}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0E7B2942-A74D-4297-B2A8-7F7C5955C476}.Release|Any CPU.ActiveCfg = Release|Any CPU

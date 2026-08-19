@@ -8,15 +8,21 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v1
-    - name: Setup .NET Core
-      uses: actions/setup-dotnet@v1
+    - uses: actions/checkout@v4
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: 6.0.100
-    - name: Build with dotnet
-      run: dotnet build --configuration Release
+        dotnet-version: |
+          8.0.x
+          9.0.x
+          10.0.x
+    - name: Restore
+      run: dotnet restore Zxw.Framework.NetCore.sln
+    - name: Build
+      run: dotnet build Zxw.Framework.NetCore.sln --configuration Release --no-restore
+    - name: Test
+      run: dotnet test Zxw.Framework.UnitTest/Zxw.Framework.UnitTest.csproj --configuration Release --no-build --verbosity minimal --filter "FullyQualifiedName~SqlIdentifier|FullyQualifiedName~UnitOfWork|FullyQualifiedName~JsonConvertor|FullyQualifiedName~WebContext|FullyQualifiedName~OrcaRouter"
     - name: Pack
-      run: dotnet pack "Zxw.Framework.NetCore/Zxw.Framework.NetCore.csproj" --configuration Release -p:PackageVersion=6.0.0 --output nupkgs
-    - name: Publish
-      run: dotnet nuget push "nupkgs/Zxw.Framework.NetCore.6.0.0.nupkg" --skip-duplicate --api-key oy2mt5urxjxze72ta63qtei2crwt5fgeldmsgmwb6pfvee --source "https://api.nuget.org/v3/index.json"
- 
+      run: |
+        dotnet pack "Zxw.Framework.NetCore/Zxw.Framework.NetCore.csproj" --configuration Release --no-build -p:PackageVersion=7.0.0 --output nupkgs
+        dotnet pack "Zxw.Framework.AI/Zxw.Framework.AI.csproj" --configuration Release --no-build -p:PackageVersion=1.0.0 --output nupkgs

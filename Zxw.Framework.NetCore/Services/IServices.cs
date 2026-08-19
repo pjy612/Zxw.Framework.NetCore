@@ -8,7 +8,7 @@ using Zxw.Framework.NetCore.Models;
 
 namespace Zxw.Framework.NetCore.Services
 {
-    public interface IService<T,TKey>: ITransientDependency, IDisposable where T:IBaseModel<TKey>
+    public interface IService<T,TKey>: IScopedDependency, IDisposable where T:IBaseModel<TKey>
     {
         #region Insert
 

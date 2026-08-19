@@ -11,7 +11,7 @@ using Zxw.Framework.NetCore.Models;
 namespace Zxw.Framework.NetCore.Repositories
 {
     [FromDbContextFactoryInterceptor]
-    public interface IRepository<T, in TKey>: ITransientDependency, IDisposable where T : class, IBaseModel<TKey> ,new()
+    public interface IRepository<T, in TKey>: IScopedDependency, IDisposable where T : class, IBaseModel<TKey> ,new()
     {
         #region Insert
 

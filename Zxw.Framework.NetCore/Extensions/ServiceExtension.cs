@@ -4,6 +4,7 @@ using CSRedis;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using System;
 using System.IO;
 using System.Linq;
@@ -253,7 +254,7 @@ namespace Zxw.Framework.NetCore.Extensions
             var types = controllerAssembly.GetTypes().Where(t =>
             {
                 var typeInfo = t.GetTypeInfo();
-                return typeInfo.IsClass && !typeInfo.IsAbstract && !typeInfo.IsGenericType && t.IsAssignableFrom(typeof(Controller));
+                return typeInfo.IsClass && !typeInfo.IsAbstract && !typeInfo.IsGenericType && typeof(Controller).IsAssignableFrom(t);
             });
 
             foreach (var type in types)
@@ -394,6 +395,7 @@ namespace Zxw.Framework.NetCore.Extensions
             //    options.TagName = option.TagName;
             //});
             services.AddSingleton(option);
+            services.TryAddScoped<IUnitOfWork, EfUnitOfWork>();
             return services.AddDbContext<IT, T>();
         }
         /// <summary>
@@ -441,13 +443,13 @@ namespace Zxw.Framework.NetCore.Extensions
 
         public static IServiceCollection AddDefaultWebContext(this IServiceCollection services)
         {
-            return services.AddSingleton<IWebContext, WebContext>();
+            return services.AddScoped<IWebContext, WebContext>();
         }
 
         public static IServiceCollection AddWebContext<T>(this IServiceCollection services) where T:WebContext
         {
-            services.Remove(new ServiceDescriptor(typeof(IWebContext), typeof(WebContext), ServiceLifetime.Singleton));
-            return services.AddSingleton<IWebContext, T>();
+            services.RemoveAll<IWebContext>();
+            return services.AddScoped<IWebContext, T>();
         }
 
         /// <summary>
@@ -461,6 +463,7 @@ namespace Zxw.Framework.NetCore.Extensions
         {
             config?.Invoke(services);
             services.RegisterServiceLifetimeDependencies();
+            services.TryAddScoped<IUnitOfWork, EfUnitOfWork>();
             services.AddHttpContextAccessor();
             services.AddDataProtection();
             services.AddDefaultWebContext();

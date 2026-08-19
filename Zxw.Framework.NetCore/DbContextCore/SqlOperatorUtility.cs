@@ -183,6 +183,7 @@ namespace Zxw.Framework.NetCore.DbContextCore
             var sql = new List<string>();
             foreach (var table in tables)
             {
+                SqlIdentifier.EnsureSafe(table, nameof(tables));
                 sql.Add($"delete from {table};");
             }
 

@@ -34,10 +34,22 @@ namespace Zxw.Framework.NetCore.DbContextCore
             return this.Database.GetService<T>();
         }
 
+        protected int CommitIfAutoSave()
+        {
+            return Option.AutoSaveChanges ? SaveChanges() : 0;
+        }
+
+        protected Task<int> CommitIfAutoSaveAsync(CancellationToken cancellationToken = default)
+        {
+            return Option.AutoSaveChanges
+                ? SaveChangesAsync(cancellationToken)
+                : Task.FromResult(0);
+        }
+
         public new virtual int Add<T>(T entity) where T : class
         {
             base.Add(entity);
-            return  SaveChanges();
+            return CommitIfAutoSave();
         }
 
         protected BaseDbContext(DbContextOption option)
@@ -122,42 +134,42 @@ namespace Zxw.Framework.NetCore.DbContextCore
             }
         }
 
-        public virtual async Task<int> AddAsync<T>(T entity) where T : class
+        public new virtual async Task<int> AddAsync<T>(T entity, CancellationToken cancellationToken = default) where T : class
         {
-            await base.AddAsync(entity);
-            return await SaveChangesAsync();
+            await base.AddAsync(entity, cancellationToken);
+            return await CommitIfAutoSaveAsync(cancellationToken);
         }
 
         public virtual int AddRange<T>(ICollection<T> entities) where T : class
         {
             base.AddRange(entities);
-            return  SaveChanges();
+            return CommitIfAutoSave();
         }
 
-        public virtual async Task<int> AddRangeAsync<T>(ICollection<T> entities) where T : class
+        public virtual async Task<int> AddRangeAsync<T>(ICollection<T> entities, CancellationToken cancellationToken = default) where T : class
         {
-            await base.AddRangeAsync(entities);
-            return await SaveChangesAsync();
+            await base.AddRangeAsync(entities, cancellationToken);
+            return await CommitIfAutoSaveAsync(cancellationToken);
         }
 
         public virtual int Count<T>(Expression<Func<T, bool>> @where = null) where T : class
         {
-            //return CountByCompileQuery(where);
             return where == null ? GetDbSet<T>().Count() : GetDbSet<T>().Count(@where);
         }
 
-        public virtual async Task<int> CountAsync<T>(Expression<Func<T, bool>> @where = null) where T : class
+        public virtual async Task<int> CountAsync<T>(Expression<Func<T, bool>> @where = null, CancellationToken cancellationToken = default) where T : class
         {
-            //return await CountByCompileQueryAsync(where);
-            return await (where == null ? GetDbSet<T>().CountAsync() : GetDbSet<T>().CountAsync(@where));
+            return await (where == null
+                ? GetDbSet<T>().CountAsync(cancellationToken)
+                : GetDbSet<T>().CountAsync(@where, cancellationToken));
         }
 
         public virtual int Delete<T,TKey>(TKey key) where T : BaseModel<TKey>
         {
             var entity = Find<T>(key);
-            //var entity = GetByCompileQuery<T, TKey>(key);
+            if (entity == null) return 0;
             Remove(entity);
-            return  SaveChanges();
+            return CommitIfAutoSave();
         }
 
         public virtual bool EnsureCreated()
@@ -189,50 +201,34 @@ namespace Zxw.Framework.NetCore.DbContextCore
         /// <summary>
         /// edit an entity.
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <typeparam name="TKey"></typeparam>
-        /// <param name="entity"></param>
-        /// <returns></returns>
         public virtual int Edit<T>(T entity) where T : class 
         {
-            //var dbModel = Find<T, TKey>(entity.Id);
-            //if (dbModel == null) return -1;
-            ////Entry(model).CurrentValues.SetValues(entity);
-            //var properties = typeof(T).GetProperties();
-            //var changedProperties = new List<string>();
-            //foreach (var property in properties)
-            //{
-            //    var reflector = property.GetReflector();
-
-            //    var value = reflector.GetValue(entity);
-            //    var dbvalue = reflector.GetValue(dbModel);
-            //    if (value != dbvalue)
-            //    {
-            //        changedProperties.Add(property.Name);
-            //    }
-            //}
             base.Update(entity);
             base.Entry(entity).State = EntityState.Modified;
-            return SaveChanges();
-            //return Update(entity, changedProperties.ToArray());
+            return CommitIfAutoSave();
         }
 
         /// <summary>
         /// edit entities.
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="entities"></param>
-        /// <returns></returns>
         public virtual int EditRange<T>(ICollection<T> entities) where T : class
         {
-            GetDbSet<T>().AttachRange(entities.ToArray());
-            return  SaveChanges();
+            if (entities == null || entities.Count == 0) return 0;
+            foreach (var entity in entities)
+            {
+                var entry = Entry(entity);
+                if (entry.State == EntityState.Detached)
+                {
+                    GetDbSet<T>().Attach(entity);
+                }
+                entry.State = EntityState.Modified;
+            }
+            return CommitIfAutoSave();
         }
 
         public virtual bool Exist<T>(Expression<Func<T, bool>> @where = null) where T : class
         {
             return @where == null ? GetDbSet<T>().Any() : GetDbSet<T>().Any(@where);
-            //return CountByCompileQuery(where) > 0;
         }
 
         public virtual IQueryable<T> FilterWithInclude<T>(Func<IQueryable<T>, IQueryable<T>> include, Expression<Func<T, bool>> @where) where T : class
@@ -245,10 +241,11 @@ namespace Zxw.Framework.NetCore.DbContextCore
             return result;
         }
 
-        public virtual async Task<bool> ExistAsync<T>(Expression<Func<T, bool>> @where = null) where T : class
+        public virtual async Task<bool> ExistAsync<T>(Expression<Func<T, bool>> @where = null, CancellationToken cancellationToken = default) where T : class
         {
-            return await Task.FromResult(Exist(where));
-            //return await CountByCompileQueryAsync(where) > 0;
+            return await (where == null
+                ? GetDbSet<T>().AnyAsync(cancellationToken)
+                : GetDbSet<T>().AnyAsync(where, cancellationToken));
         }
 
         public virtual T Find<T>(object key) where T : class
@@ -298,20 +295,16 @@ namespace Zxw.Framework.NetCore.DbContextCore
             //return FirstOrDefaultByCompileQuery<T>(where);
         }
 
-        public virtual async Task<T> GetSingleOrDefaultAsync<T>(Expression<Func<T, bool>> @where = null) where T : class
+        public virtual async Task<T> GetSingleOrDefaultAsync<T>(Expression<Func<T, bool>> @where = null, CancellationToken cancellationToken = default) where T : class
         {
-            return await (where == null ? GetDbSet<T>().SingleOrDefaultAsync() : GetDbSet<T>().SingleOrDefaultAsync(where));
-            //return await FirstOrDefaultByCompileQueryAsync<T>(where);
+            return await (where == null
+                ? GetDbSet<T>().SingleOrDefaultAsync(cancellationToken)
+                : GetDbSet<T>().SingleOrDefaultAsync(where, cancellationToken));
         }
 
         /// <summary>
         /// update data by columns.
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="model"></param>
-
-        /// <param name="updateColumns"></param>
-        /// <returns></returns>
         public virtual int Update<T>(T model, params string[] updateColumns) where T : class
         {
             if (updateColumns != null && updateColumns.Length > 0)
@@ -327,7 +320,7 @@ namespace Zxw.Framework.NetCore.DbContextCore
             {
                 Entry(model).State = EntityState.Modified;
             }
-            return  SaveChanges();
+            return CommitIfAutoSave();
         }
 
         public virtual int Update<T>(Expression<Func<T, bool>> @where, Expression<Func<T,T>> updateFactory) where T : class
@@ -335,25 +328,22 @@ namespace Zxw.Framework.NetCore.DbContextCore
             return GetDbSet<T>().Where(where).Update(updateFactory);
         }
 
-        public virtual async Task<int> UpdateAsync<T>(Expression<Func<T, bool>> @where, Expression<Func<T,T>> updateFactory) where T : class
+        public virtual async Task<int> UpdateAsync<T>(Expression<Func<T, bool>> @where, Expression<Func<T,T>> updateFactory, CancellationToken cancellationToken = default) where T : class
         {
-            return await GetDbSet<T>().Where(where).UpdateAsync(updateFactory);
+            return await GetDbSet<T>().Where(where).UpdateAsync(updateFactory, cancellationToken);
         }
 
         /// <summary>
         /// delete by query.
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="where"></param>
-        /// <returns></returns>
         public virtual int Delete<T>(Expression<Func<T, bool>> @where) where T : class
         {
             return GetDbSet<T>().Where(@where).Delete();
         }
 
-        public virtual async Task<int> DeleteAsync<T>(Expression<Func<T, bool>> @where) where T : class
+        public virtual async Task<int> DeleteAsync<T>(Expression<Func<T, bool>> @where, CancellationToken cancellationToken = default) where T : class
         {
-            return await GetDbSet<T>().Where(@where).DeleteAsync();
+            return await GetDbSet<T>().Where(@where).DeleteAsync(cancellationToken);
         }
 
         /// <summary>
@@ -365,7 +355,7 @@ namespace Zxw.Framework.NetCore.DbContextCore
         /// <param name="destinationTableName"></param>
         public virtual void BulkInsert<T>(IList<T> entities, string destinationTableName = null) where T : class 
         {
-            if (!Database.IsSqlServer()&&!Database.IsMySql())
+            if (!Database.IsSqlServer() && !Database.IsMySqlCompatible())
              throw new NotSupportedException("This method only supports for SQL Server or MySql.");
         }
         [Obsolete]

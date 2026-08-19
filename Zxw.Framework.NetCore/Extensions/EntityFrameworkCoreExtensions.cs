@@ -25,7 +25,7 @@ namespace Zxw.Framework.NetCore.Extensions
                       " left join sys.extended_properties f on d.id=f.major_id and f.minor_id=0) t" +
                       " where t.TableName!=''";
             }
-            else if (db.IsMySql())
+            else if (db.IsMySqlCompatible())
             {
                 sql =
                     "SELECT TABLE_NAME as TableName," +
@@ -75,7 +75,7 @@ namespace Zxw.Framework.NetCore.Extensions
                       "FROM  syscolumns a left join systypes b on a.xtype=b.xusertype  inner join sysobjects d on a.id=d.id and d.xtype='U' and d.name<>'dtproperties' left join syscomments e on a.cdefault=e.id  left join sys.extended_properties g on a.id=g.major_id AND a.colid=g.minor_id left join sys.extended_properties f on d.id=f.class and f.minor_id=0 " +
                       $"where b.name is not null and d.name in ({tableNames.Select(m=>$"'{m}'").Join(",")}) order by a.id,a.colorder";
             }
-            else if (db.IsMySql())
+            else if (db.IsMySqlCompatible())
             {
                 sql =
                     "select table_name as TableName,column_name as ColName, " +
