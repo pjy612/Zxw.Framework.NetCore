@@ -10,8 +10,8 @@
 * `dotnet add package Zxw.Framework.NetCore --version 7.0.0`
 
 [Zxw.Framework.AI](https://www.nuget.org/packages/Zxw.Framework.AI)（可选）
-* `Install-Package Zxw.Framework.AI -Version 7.0.0`
-* `dotnet add package Zxw.Framework.AI --version 7.0.0`
+* `Install-Package Zxw.Framework.AI -Version 1.0.0`
+* `dotnet add package Zxw.Framework.AI --version 1.0.0`
 * 内置 LLM 网关选项：[OrcaRouter](https://www.orcarouter.ai/ref/ref_4efd338f7db91cf2aa1d)（OpenAI 兼容，默认 `orcarouter/auto`）
 
 **开发环境**

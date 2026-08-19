@@ -3,14 +3,14 @@
   <PropertyGroup>
     <TargetFrameworks>net8.0;net9.0;net10.0</TargetFrameworks>
     <Authors>victor.tzeng</Authors>
-    <Version>7.0.0</Version>
-    <AssemblyVersion>7.0.0.0</AssemblyVersion>
-    <FileVersion>7.0.0.0</FileVersion>
+    <Version>1.0.0</Version>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+    <FileVersion>1.0.0.0</FileVersion>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <Copyright>victor.tzeng@outlook.com</Copyright>
     <PackageProjectUrl>https://github.com/VictorTzeng/Zxw.Framework.NetCore</PackageProjectUrl>
     <Description>可选 AI 客户端：内置 OrcaRouter（OpenAI 兼容网关）作为一等 Provider。</Description>
-    <PackageReleaseNotes>7.0.0：新增 IChatClient / OrcaRouterChatClient / AddOrcaRouter DI 扩展。</PackageReleaseNotes>
+    <PackageReleaseNotes>1.0.0：新增 IChatClient / OrcaRouterChatClient / AddOrcaRouter DI 扩展。</PackageReleaseNotes>
     <PackageTags>AI;LLM;OrcaRouter;OpenAI;Chat</PackageTags>
     <LangVersion>latest</LangVersion>
     <ImplicitUsings>disable</ImplicitUsings>

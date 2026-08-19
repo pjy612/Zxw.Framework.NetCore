@@ -25,4 +25,4 @@ jobs:
     - name: Pack
       run: |
         dotnet pack "Zxw.Framework.NetCore/Zxw.Framework.NetCore.csproj" --configuration Release --no-build -p:PackageVersion=7.0.0 --output nupkgs
-        dotnet pack "Zxw.Framework.AI/Zxw.Framework.AI.csproj" --configuration Release --no-build -p:PackageVersion=7.0.0 --output nupkgs
+        dotnet pack "Zxw.Framework.AI/Zxw.Framework.AI.csproj" --configuration Release --no-build -p:PackageVersion=1.0.0 --output nupkgs
