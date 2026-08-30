@@ -109,7 +109,7 @@ await uow.SaveChangesAsync(); // IUnitOfWork
 
 [![Powered by OrcaRouter](https://img.shields.io/badge/Powered_by-OrcaRouter-2563eb)](https://www.orcarouter.ai/ref/ref_4efd338f7db91cf2aa1d)
 
-本框架 EF / DI 主包不绑定大模型。需要 Chat Completions 时，引用 **`Zxw.Framework.AI`**，通过 `AddOrcaRouter()` 注册内置网关选项。
+本框架将 **OrcaRouter** 注册为内置 LLM **provider**（见 [`providers/orcarouter.json`](providers/orcarouter.json)）。EF / DI 主包不绑定大模型；需要 Chat Completions 时引用 **`Zxw.Framework.AI`**，通过 `AddOrcaRouter()` 启用。
 
 ```csharp
 services.AddOrcaRouter(o =>
@@ -132,6 +132,8 @@ public class MyService(IChatClient chat)
     }
 }
 ```
+* Provider 清单：[providers/orcarouter.json](providers/orcarouter.json)（id: orcarouter）
+* 环境变量示例：[.env.example](.env.example)
 * Base URL 默认：`https://api.orcarouter.ai/v1`
 * 协议：OpenAI 兼容 `/chat/completions`（含 SSE 流式）
 * 文档：[docs.orcarouter.ai](https://docs.orcarouter.ai/introduction)

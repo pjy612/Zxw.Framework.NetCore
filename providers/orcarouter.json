@@ -1,0 +1,28 @@
+{
+  "id": "orcarouter",
+  "name": "OrcaRouter",
+  "type": "openai-compat",
+  "api": "openai-completions",
+  "base_url": "https://api.orcarouter.ai/v1",
+  "api_key_env": "ORCAROUTER_API_KEY",
+  "default_model": "orcarouter/auto",
+  "models": [
+    {
+      "id": "orcarouter/auto",
+      "name": "OrcaRouter Auto"
+    }
+  ],
+  "headers": {
+    "HTTP-Referer": "https://www.orcarouter.ai/ref/ref_4efd338f7db91cf2aa1d",
+    "X-Title": "Zxw.Framework.NetCore"
+  },
+  "implementation": {
+    "package": "Zxw.Framework.AI",
+    "nuget": "https://www.nuget.org/packages/Zxw.Framework.AI",
+    "di": "services.AddOrcaRouter()",
+    "client": "Zxw.Framework.AI.Clients.OrcaRouterChatClient",
+    "interface": "Zxw.Framework.AI.Abstractions.IChatClient"
+  },
+  "docs": "https://docs.orcarouter.ai/introduction",
+  "referral": "https://www.orcarouter.ai/ref/ref_4efd338f7db91cf2aa1d"
+}
