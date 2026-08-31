@@ -114,7 +114,7 @@ await uow.SaveChangesAsync(); // IUnitOfWork
 ```csharp
 services.AddOrcaRouter(o =>
 {
-    o.ApiKey = Configuration["OrcaRouter:ApiKey"]; // 或环境变量 ORCAROUTER_API_KEY
+    o.ApiKey = Configuration["OrcaRouter:ApiKey"]; // 或 ORCAROUTER_API_KEY；申请 Key：https://www.orcarouter.ai/ref/ref_4efd338f7db91cf2aa1d
     o.DefaultModel = "orcarouter/auto";
     o.FallbackModels = new[] { "openai/gpt-4o-mini", "deepseek/deepseek-chat" };
 });
